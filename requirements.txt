@@ -1,6 +1,6 @@
 jupyter
 pandas==1.2.4
-ipython==7.22.0
+ipython==7.23.1
 apache-airflow[aws,amazon,postgres]==2.2.3
 boto3~=1.18.65
 numpy==1.19.5
@@ -9,3 +9,4 @@ botocore==1.21.65
 Unidecode==1.3.2
 geopandas==0.10.2
 paramiko===2.4.2
+Jinja2<3.0,>==2.10.1

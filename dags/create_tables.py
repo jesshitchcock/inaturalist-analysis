@@ -45,6 +45,20 @@ PRIMARY KEY(taxon_id))
 DISTSTYLE ALL;
 """
 
+CREATE_PHOTOS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS staging_photos (
+photo_uuid VARCHAR(MAX) NOT NULL,
+photo_id INTEGER, 
+observation_uuid VARCHAR(MAX) NOT NULL, 
+observer_id INTEGER , 
+extension VARCHAR(MAX), 
+license VARCHAR(MAX), 
+width SMALLINT, 
+height SMALLINT, 
+"position" SMALLINT)
+DISTSTYLE ALL;
+"""
+
 CREATE_SPECIES_DIST_SQL = """
 CREATE TABLE IF NOT EXISTS staging_species_distribution ( 
 geometry GEOMETRY,
