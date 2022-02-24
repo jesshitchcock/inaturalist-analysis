@@ -1,28 +1,16 @@
-CREATE_AMPHIBIAN_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS staging_amphibian_reference ( 
-taxon_id INTEGER, 
-scientific_name VARCHAR(256), 
-genus VARCHAR(256),	
-family VARCHAR(256), 
-taxon_order VARCHAR(256), 
-taxon_source VARCHAR(MAX), 
-notes VARCHAR(256)) 
-DISTSTYLE ALL;
-"""
-
 CREATE_OBSERVERS_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS staging_observers (
-observer_id INTEGER NOT NULL, 
-login VARCHAR(256) NOT NULL, 
+CREATE TABLE IF NOT EXISTS staging.observers_raw (
+observer_id INTEGER, 
+login VARCHAR(256), 
 name VARCHAR(256),
 PRIMARY KEY(observer_id))
-DISTSTYLE ALL;
+DISTSTYLE AUTO;
 """
 
 CREATE_OBSERVATIONS_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS staging_observations (
-observation_uuid VARCHAR(50) NOT NULL, 
-observer_id INTEGER NOT NULL, 
+CREATE TABLE IF NOT EXISTS staging.observations_raw (
+observation_uuid VARCHAR(50), 
+observer_id INTEGER, 
 latitude DOUBLE PRECISION,
 longitude DOUBLE PRECISION,
 positional_accuracy INTEGER, 
@@ -30,37 +18,23 @@ taxon_id INTEGER,
 quality_grade VARCHAR(50), 
 observed_on DATE, 
 PRIMARY KEY(observation_uuid))
-DISTSTYLE ALL;
+DISTSTYLE AUTO;
 """
 
 CREATE_TAXA_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS staging_taxa (
-taxon_id INTEGER NOT NULL, 
+CREATE TABLE IF NOT EXISTS staging.taxa_raw (
+taxon_id INTEGER, 
 ancestry VARCHAR(256), 
 rank_level DOUBLE PRECISION,
 rank VARCHAR(20),
 name VARCHAR(256), 
 active BOOLEAN,  
 PRIMARY KEY(taxon_id))
-DISTSTYLE ALL;
+DISTSTYLE AUTO;
 """
 
-CREATE_PHOTOS_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS staging_photos (
-photo_uuid VARCHAR(MAX) NOT NULL,
-photo_id INTEGER, 
-observation_uuid VARCHAR(MAX) NOT NULL, 
-observer_id INTEGER , 
-extension VARCHAR(MAX), 
-license VARCHAR(MAX), 
-width SMALLINT, 
-height SMALLINT, 
-"position" SMALLINT)
-DISTSTYLE ALL;
-"""
-
-CREATE_SPECIES_DIST_SQL = """
-CREATE TABLE IF NOT EXISTS staging_species_distribution ( 
+CREATE_GEOSPATIAL_SQL = """
+CREATE TABLE IF NOT EXISTS staging.species_geospatial_raw ( 
 geometry GEOMETRY,
 id_no INTEGER, 
 binomial VARCHAR(MAX), 
@@ -89,7 +63,7 @@ marine VARCHAR(256),
 terrestial VARCHAR(256), 
 freshwater VARCHAR(256), 
 shape_leng DOUBLE PRECISION,
-shape_area DOUBLE PRECISION
-) 
-DISTSTYLE ALL;
+shape_area DOUBLE PRECISION, 
+PRIMARY KEY(id_no)) 
+DISTSTYLE AUTO;
 """

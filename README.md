@@ -8,8 +8,10 @@ explore the relationship between the known species distributions (spatial data) 
 These insights could inform future research efforts. 
 
 ## Project Scope
-I have limited the project scope to the Amphibia class, but the data model has been designed to be applicable to 
+I have limited the project scope to species in the class Amphibia. In 2022, 41% of all Amphibian species are threatened with extinction [red list]. 
+While the project scope will be limited to Amphibians, the data model has been designed to be applicable to 
 observation and spatial data for all living organisms. 
+
 
 Some use cases for this data model could be: 
 1. How many users have contributed to amphibian observations during a set period of time?
@@ -41,15 +43,16 @@ Note for the purposes of this project we will not use the image data.
 #### International Union for Conservation of Nature (IUCN) Red List Spatial Data 
 > The IUCN Red List of Threatened Species™ contains global assessments for more than 142,500 species. More than 80% of these (>115,000 species) have spatial data.
 
+![IUCN Red List Categories](images/iucn_red_list_category.png)
 These assessments classify species according to one of the following categories: 
-- Extinct
-- Extinct in the Wild
-- Endangered
-- Vulnerable
-- Near Threatened
-- Least Concern
-- Data Deficient
 - Not Evaluated
+- Data Deficient
+- Least Concern
+- Near Threatened
+- Vulnerable
+- Endangered
+- Extinct in the Wild
+- Extinct
 
 These classifications as well as spatial data are important for environmental impact assessments and the protection of wildlife. 
 Spatial data in the Esri shapefile format can be downloaded from [iucnredlist.org](https://www.iucnredlist.org/resources/spatial-data-download).
@@ -68,7 +71,7 @@ The following jupyter notebooks explores the data from:
 The data model was designed to facilitate data analytics based on the questions outlined in the Project Scope Section.  
 
 1. Taxa 
-
+<a href="#fn:bad" rel="footnote">2</a>
 
 
 
