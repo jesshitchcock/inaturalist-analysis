@@ -8,8 +8,10 @@ explore the relationship between the known species distributions (spatial data) 
 These insights could inform future research efforts. 
 
 ## Project Scope
-I have limited the project scope to the Amphibia class, but the data model has been designed to be applicable to 
+I have limited the project scope to species in the class Amphibia. In 2022, 41% of all Amphibian species are threatened with extinction [red list]. 
+While the project scope will be limited to Amphibians, the data model has been designed to be applicable to 
 observation and spatial data for all living organisms. 
+
 
 Some use cases for this data model could be: 
 1. How many users have contributed to amphibian observations during a set period of time?
@@ -41,15 +43,16 @@ Note for the purposes of this project we will not use the image data.
 #### International Union for Conservation of Nature (IUCN) Red List Spatial Data 
 > The IUCN Red List of Threatened Species™ contains global assessments for more than 142,500 species. More than 80% of these (>115,000 species) have spatial data.
 
+![IUCN Red List Categories](images/iucn_red_list_category.png)
 These assessments classify species according to one of the following categories: 
-- Extinct
-- Extinct in the Wild
-- Endangered
-- Vulnerable
-- Near Threatened
-- Least Concern
-- Data Deficient
 - Not Evaluated
+- Data Deficient
+- Least Concern
+- Near Threatened
+- Vulnerable
+- Endangered
+- Extinct in the Wild
+- Extinct
 
 These classifications as well as spatial data are important for environmental impact assessments and the protection of wildlife. 
 Spatial data in the Esri shapefile format can be downloaded from [iucnredlist.org](https://www.iucnredlist.org/resources/spatial-data-download).
@@ -60,14 +63,29 @@ For this project, I downloaded the Amphibian shapefile which includes polygon sh
 - Caecilian Amphibians (species from the order Gymnophiona)
 
 ### Data Exploration
-The following jupyter notebooks explores the data from:
-- iNaturalist Observations
-- IUCN Amphibian Shapefile data 
+Data exploration can be viewed in the [Data Exploration.ipynb](Data Exploration.ipynb)
 
 ## Data Model 
 The data model was designed to facilitate data analytics based on the questions outlined in the Project Scope Section.  
 
-1. Taxa 
+### 1. Taxa
+The transformed `taxa` table is much larger than the original table. At the time of writing there are just over 100K rows. 
+#### Distribution Key 
+Chose to use the taxon_id as the distribution key, this is based on the fact that most joins between tables will be on taxon_id. 
+In addition after transformation, there will be multiple records per taxon_id to split out the ancestry column into multiple rows. 
+The data will be fairly evenly distributed (see `taxa_dist_sql` code in sql_checks.py): 
+- the minimum rows per taxon_id will be 1 (this is for the taxon_id that has the highest rank) 
+- the maximum rows per taxon_id will be 11 (for the lowest ranked taxon_ids) 
+- the average rows per taxon_id is 8 
+- the median rows per taxon_id is 9 
+
+#### Sort Key/s
+The taxon_rank and ancestry_id columns were chosen as the sort key because most operations will filter by ancestry in order to return 
+a single record per taxon of interest. 
+For example, if we wanted to count the number of Amphibian species in the `taxa` table, 
+we would filter by the `species` taxon_rank and the ancestry_id for the `Amphibia` class. 
+	
+
 
 
 
@@ -75,3 +93,6 @@ The data model was designed to facilitate data analytics based on the questions 
 ## References
 [^1] iNaturalist Licensed Observation Images was first accessed on 2022-01-01 from https://registry.opendata.aws/inaturalist-open-data.
 [^2] IUCN Spatial Data Download on 2022-01-01 from https://www.iucnredlist.org/resources/spatial-data-download
+
+IUCN 2021. The IUCN Red List of Threatened Species. 2021-3.
+https://www.iucnredlist.org. Downloaded on 2021-12-23.
