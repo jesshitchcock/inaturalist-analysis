@@ -1,9 +1,10 @@
 from airflow import DAG
 from datetime import datetime
-import logging
-from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from scripts import create_staging_tables
+import create_production_tables
+import transformation_scripts
+import create_staging_tables
+
 # from airflow.operators.python import PythonOperator
 # from airflow.providers.amazon.aws.transfers.google_api_to_s3 import GoogleApiToS3Operator
 from airflow.operators.dummy import DummyOperator
@@ -55,34 +56,40 @@ with DAG(
 
 
 ## Create Staging Table Tasks
-    create_geospatial_table = PostgresOperator(
+    create_geospatial_raw_table = PostgresOperator(
         task_id="create_species_geospatial_raw_table",
         dag=dag,
         postgres_conn_id=REDSHIFT_CONN_ID,
-        sql=create_staging_tables.CREATE_GEOSPATIAL_SQL
+        sql=create_staging_tables.create_geospatial_raw_table_sql
     )
 
-    create_observers_table = PostgresOperator(
+    create_observers_raw_table = PostgresOperator(
         task_id="create_observers_raw_table",
         dag=dag,
         postgres_conn_id=REDSHIFT_CONN_ID,
-        sql=create_staging_tables.CREATE_OBSERVERS_TABLE_SQL
+        sql=create_staging_tables.create_observers_raw_table_sql
     )
 
-    create_observations_table = PostgresOperator(
+    create_observations_raw_table = PostgresOperator(
         task_id="create_observations_raw__table",
         dag=dag,
         postgres_conn_id=REDSHIFT_CONN_ID,
-        sql=create_staging_tables.CREATE_OBSERVATIONS_TABLE_SQL
+        sql=create_staging_tables.create_observations_raw_table_sql
     )
 
-    create_taxa_table = PostgresOperator(
+    create_taxa_raw_table = PostgresOperator(
         task_id="create_taxa_raw_table",
         dag=dag,
         postgres_conn_id=REDSHIFT_CONN_ID,
-        sql=create_staging_tables.CREATE_TAXA_TABLE_SQL
+        sql=create_staging_tables.create_taxa_raw_table_sql
     )
-
+## Create Production tables
+    create_taxa_prod_table = PostgresOperator(
+        task_id="create_taxa_table",
+        dag=dag,
+        postgres_conn_id=REDSHIFT_CONN_ID,
+        sql=create_production_tables.create_taxa_prod_table_sql
+    )
 ## Copy Staging Data from S3 to Redshift
     copy_geospatial_data = S3ToRedshiftOperator(
         task_id='copy_geospatial_data_to_redshift',
@@ -136,6 +143,14 @@ with DAG(
         redshift_conn_id=REDSHIFT_CONN_ID
     )
 
+## Transform Staging and Data Load Prod tables
+    transform_taxa_data = PostgresOperator(
+        task_id="transform_and_load_taxa_to_prod",
+        dag=dag,
+        postgres_conn_id=REDSHIFT_CONN_ID,
+        sql=transformation_scripts.taxa_transformation_sql
+    )
+
 ## Data Quality Checks
     run_staging_quality_checks = DataQualityOperator(
         task_id='run_data_quality_checks',
@@ -150,14 +165,14 @@ with DAG(
 
 # Create staging tables in dev database
 start_data_pipeline >> create_staging_schema
-create_staging_schema >> [create_observers_table, create_taxa_table, create_observations_table, create_geospatial_table]
+create_staging_schema >> [create_observers_raw_table, create_taxa_raw_table, create_observations_raw_table, create_geospatial_raw_table]
 # Copy staging data from S3
-create_observers_table >> copy_observers_data
-create_taxa_table >> copy_taxa_data
-create_observations_table >> copy_observations_data
-create_geospatial_table >> copy_geospatial_data
+create_observers_raw_table >> copy_observers_data
+create_taxa_raw_table >> copy_taxa_data
+create_observations_raw_table >> copy_observations_data
+create_geospatial_raw_table >> copy_geospatial_data
 # Run data quality checks
 [copy_observers_data, copy_taxa_data, copy_observations_data, copy_geospatial_data] >> run_staging_quality_checks
 
-run_staging_quality_checks >> create_prod_schema >>  end_data_pipeline
+run_staging_quality_checks >> create_prod_schema >>  create_taxa_prod_table >> transform_taxa_data >> end_data_pipeline
 

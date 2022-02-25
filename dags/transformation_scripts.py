@@ -1,4 +1,6 @@
-CREATE_TAXA_TABLE = """CREATE TABLE taxa AS 
+taxa_transformation_sql = """
+TRUNCATE TABLE production.taxa;
+INSERT INTO production.taxa 
 -- Redshift does not support unnesting array data 
 -- to get around this I have generated rows 1 - 30 to cross join each ancestry_id to its taxon_id record.
 with rows AS (
@@ -49,7 +51,7 @@ with rows AS (
                               -- join the staging_taxa data to the rows table 
                               -- where the number of rows is equal to or less than the number of taxon_ids in the ancestry column
                               -- for example "48460/1/2/355675/20978/27880/27882/27907" has 8 taxon_ids listed in the ancestry column so we would join to rows 1 - 8
-                                staging.taxa as taxa ON 
+                                staging.taxa_raw as taxa ON 
                                 rows.n <= REGEXP_COUNT(taxa.ancestry, '/') + 1
                         WHERE 
                             -- filter for amphibia class (taxon_id =20978)
@@ -63,7 +65,7 @@ with rows AS (
   							binomial, 
   							category 
  						FROM 
-  							staging.species_geospatial
+  							staging.species_geospatial_raw
   						GROUP BY 
   							binomial, 
   							category
@@ -71,20 +73,20 @@ with rows AS (
 SELECT 
      m.taxon_id, 
      m.rank as taxon_rank,
-     m.rank_level as taxon_rank_level, 
+     CAST(m.rank_level AS INTEGER) as taxon_rank_level, 
      m.name as taxon_name, 
      m.active as taxon_active,   
-     s.category as red_list_category, 
+     s.category as species_red_list_category, 
      m.ancestry as taxon_ancestry, 
-     m.ancestry_id, 
+     CAST(m.ancestry_id AS INTEGER) ancestry_id, 
      m.ancestry_position, 
      t.rank as ancestry_rank, 
-     t.rank_level as ancestry_rank_level, 
+     CAST(t.rank_level AS INTEGER) as ancestry_rank_level, 
      t.name as ancestry_name, 
      t.active as ancestry_active                                     
 FROM 
      ancestry_mapping AS m 
-LEFT JOIN staging.taxa t ON 
+LEFT JOIN staging.taxa_raw t ON 
        -- join ancestry mapping to staging_taxa to get taxa info for each ancestry_id
        m.ancestry_id = t.taxon_id AND
        -- exclude taxon_ids that equal the ancestry_id
@@ -94,22 +96,44 @@ LEFT JOIN redlist_status s ON
        m.rank = 'species'
 """
 
-CREATE_SPECIES_OBSERVATIONS_TABLE ="""
--- Are observations within the bounds of the known species distribution (plot observations co-ordinates with species distribution).
-CREATE TABLE species_observations AS 
--- Are observations within the bounds of the known species distribution (plot observations co-ordinates with species distribution).
-with selected_observations AS (
+SPECIES_GEOSPATIAL_SQL = """
+SELECT 
+    sg.id_no AS redlist_id,
+    t.taxon_id,  
+    t.taxon_name,
+    t.taxon_rank,  
+    sg.compiler as compiled_by, 
+    sg.citation as citation, 
+    sg.yrcompiled as year_compiled, 
+    sg.category as redlist_category, 
+    sg.marine, 
+    sg.terrestrial, 
+    sg.freshwater, 
+    sg.shape_leng as shape_length, 
+    sg.shape_area as shape_area,
+    geometry    
+FROM 
+    staging.species_geospatial_raw AS sg
+    INNER JOIN production.taxa AS t ON
+        sg.binomial = t.taxon_name AND 
+        t.taxon_rank ='species' AND
+        --ensure that there is only one record per species coming from the taxa table 
+        t.ancestry_name = 'Amphibia'
+"""
+
+SPECIES_OBSERVATIONS_SQL ="""
+WITH selected_observations AS (
                               SELECT 
                                    o.*, t.taxon_name, ST_SetSRID(ST_Point(longitude, latitude), 4326) as geom_point
                               FROM
-                                  staging.observations o
-                                  INNER JOIN staging.taxa t ON 
+                                  staging.observations_raw o
+                                  INNER JOIN production.taxa t ON 
                                       t.taxon_id = o.taxon_id AND 
                                       t.ancestry_name ='Amphibia' AND
                                       t.taxon_rank ='species' AND
                                       t.taxon_active IS True
 )
-geom_comparison AS ( 
+, geom_comparison AS ( 
                     SELECT 
                         ST_Within(o.geom_point, sd.geometry) as observed_in_known_area, 
                         o.*
@@ -131,7 +155,8 @@ SELECT
     observed_on, 
     -- recalculate the geom_point because you cannot group by geometry
   	ST_SetSRID(ST_Point(longitude, latitude), 4326) as geom_point, 
-	CAST(MAX(CAST(observed_in_known_area AS INTEGER)) AS BOOLEAN) as observed_in_known_area
+	CAST(MAX(CAST(observed_in_known_area AS INTEGER)) AS BOOLEAN) as observed_in_known_area, 
+	--- ADD partition load time  
 FROM 
 	geom_comparison
 GROUP BY
@@ -144,3 +169,15 @@ GROUP BY
     quality_grade, 
     observed_on 
 """
+
+OBSERVERS_SQL = """
+SELECT 
+    observer_id, 
+    login, 
+    name 
+FROM 
+    staging.observers_raw
+WHERE
+    observer_id IS NOT NULL
+"""
+

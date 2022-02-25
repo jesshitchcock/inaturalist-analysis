@@ -1,4 +1,4 @@
-CREATE_OBSERVERS_TABLE_SQL = """
+create_observers_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.observers_raw (
 observer_id INTEGER, 
 login VARCHAR(256), 
@@ -7,7 +7,7 @@ PRIMARY KEY(observer_id))
 DISTSTYLE AUTO;
 """
 
-CREATE_OBSERVATIONS_TABLE_SQL = """
+create_observations_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.observations_raw (
 observation_uuid VARCHAR(50), 
 observer_id INTEGER, 
@@ -21,7 +21,7 @@ PRIMARY KEY(observation_uuid))
 DISTSTYLE AUTO;
 """
 
-CREATE_TAXA_TABLE_SQL = """
+create_taxa_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.taxa_raw (
 taxon_id INTEGER, 
 ancestry VARCHAR(256), 
@@ -33,7 +33,7 @@ PRIMARY KEY(taxon_id))
 DISTSTYLE AUTO;
 """
 
-CREATE_GEOSPATIAL_SQL = """
+create_geospatial_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.species_geospatial_raw ( 
 geometry GEOMETRY,
 id_no INTEGER, 
@@ -42,7 +42,7 @@ presence INTEGER,
 origin INTEGER, 
 seasonal INTEGER, 
 compiler VARCHAR(256), 
-yrcompiler INTEGER,
+yrcompiled INTEGER,
 citation VARCHAR(MAX), 
 subspecies VARCHAR(256), 
 subpop VARCHAR(256), 
@@ -67,3 +67,4 @@ shape_area DOUBLE PRECISION,
 PRIMARY KEY(id_no)) 
 DISTSTYLE AUTO;
 """
+
