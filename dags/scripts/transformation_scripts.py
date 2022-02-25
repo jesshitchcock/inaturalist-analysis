@@ -118,7 +118,8 @@ FROM
         sg.binomial = t.taxon_name AND 
         t.taxon_rank ='species' AND
         --ensure that there is only one record per species coming from the taxa table 
-        t.ancestry_name = 'Amphibia'
+        -- do this by selecting the ancestry_id for Amphibia
+        t.ancestry_id =20978
 """
 
 SPECIES_OBSERVATIONS_SQL ="""
