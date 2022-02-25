@@ -1,9 +1,9 @@
 from airflow import DAG
 from datetime import datetime
 
-import create_production_tables
-import transformation_scripts
-import create_staging_tables
+from scripts import create_production_tables
+from scripts import transformation_scripts
+from scripts import create_staging_tables
 
 # from airflow.operators.python import PythonOperator
 # from airflow.providers.amazon.aws.transfers.google_api_to_s3 import GoogleApiToS3Operator
@@ -25,7 +25,7 @@ config = Config(
 OPEN_DATA_BUCKET = "inaturalist-open-data"
 CONSOLIDATED_RESOURCE_BUCKET = "inaturalist-bucket"
 AWS_CREDENTIALS_ID = 'aws_credentials'
-REDSHIFT_CONN_ID = 'redshift_dev'
+REDSHIFT_CONN_ID = 'redshift'
 
 with DAG(
         "import_s3_dag",
