@@ -6,7 +6,7 @@ class DataQualityOperator(BaseOperator):
     """This operator takes a list of tables and performs data quality checks.
     The first check makes sure the tables contain data, and the second chack makes sure that there
     are no NULL values in the primary key fields for each table."""
-    ui_color = '#89DA59'
+    ui_color = '#9999FF'
 
     def __init__(self,
                  # Define your operators params (with defaults) here
@@ -30,7 +30,7 @@ class DataQualityOperator(BaseOperator):
         self.log.info('Starting Data Quality Checks')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
-        self.log.info('Chack 1: Determine whether tables contain data')
+        self.log.info('Check 1: Determine whether tables contain data')
         for table in self.tables:
 
             # check for records in table
@@ -41,7 +41,7 @@ class DataQualityOperator(BaseOperator):
                 self.log.info(
                     f'Data quality check passed. The {table} table is not empty and contains {str(records[0][0])} records.')
 
-        self.log.info('Chack 2: Ensure that tables do not contain NULL values in the primary key field.')
+        self.log.info('Check 2: Ensure that tables do not contain NULL values in the primary key field.')
         for table in self.tables:
             p_key = redshift.get_records(f"""
             select 
