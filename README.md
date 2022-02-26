@@ -67,11 +67,28 @@ Data exploration can be viewed in the [Data Exploration.ipynb](Data Exploration.
 
 ## Data Model 
 The data model was designed to facilitate data analytics based on the questions outlined in the Project Scope Section.  
+The data model contains 4 tables. I have kept the table names for the iNaturalist tables, but have renamed the Amphibian
+shapefile to `species_geospatial`. 
+
+The data model has 1 fact table, the iNaturalist `observations` table which has been filtered to only include species observations 
+from the Amphibian class. 
+
+The dimension tables: 
+- taxa - hierarchical dimension table facilitating easy grouping/ roll ups of taxons 
+- observers - a filtered table showing users who have made at least one Amphibian observation 
+- species_geospatial - geospatial data specific for to species. This also includes the IUCN Red List Category 
 
 ### 1. Taxa
-The transformed `taxa` table is much larger than the original table. At the time of writing there are just over 100K rows. 
-#### Distribution Key 
-Chose to use the taxon_id as the distribution key, this is based on the fact that most joins between tables will be on taxon_id. 
+The raw iNaturalist `taxa` table was transformed by splitting out the ancestry field. The ancestry field is a string of taxon_ids
+corresponding to the particular taxon's ancestry. 
+The ancestry for the species *Amolops jaunsari* (taxon_id = 25900) is listed as `48460/1/2/355675/20978/20979/25473/25869`, 
+each of the taxon_ids in this field correspond to a higher level taxon and describes the ancestry of the species. 
+
+To allow easy data aggregation we split the ancestry field out into an ancestry_id and cross joined this to the original record. 
+This way there will be a record per taxon ancestry_id for every record.
+As a result, `taxa` table is much larger than the original table. At the time of writing there are just over 100K rows.
+
+The `taxon_id` is used as the distribution key, this is based on the fact that most joins between tables will be on taxon_id. 
 In addition after transformation, there will be multiple records per taxon_id to split out the ancestry column into multiple rows. 
 The data will be fairly evenly distributed (see `taxa_dist_sql` code in sql_checks.py): 
 - the minimum rows per taxon_id will be 1 (this is for the taxon_id that has the highest rank) 
@@ -79,13 +96,30 @@ The data will be fairly evenly distributed (see `taxa_dist_sql` code in sql_chec
 - the average rows per taxon_id is 8 
 - the median rows per taxon_id is 9 
 
-#### Sort Key/s
-The taxon_rank and ancestry_id columns were chosen as the sort key because most operations will filter by ancestry in order to return 
+The `taxon_rank` and `ancestry_id` columns were chosen as the sort keys because most operations will filter by ancestry in order to return 
 a single record per taxon of interest. 
 For example, if we wanted to count the number of Amphibian species in the `taxa` table, 
-we would filter by the `species` taxon_rank and the ancestry_id for the `Amphibia` class. 
-	
+we would filter by the "species" `taxon_rank` and the `ancestry_id` for the "Amphibia" class.
 
+### 2. Observers
+The raw `observers` table was filtered for observations that were made for any taxon associated with the "Amphibia" class.
+As there are not many observers, we will distribute the data across all nodes of the cluster. 
+
+### 3. Species Geospatial
+As the raw dataset contained Amphibian spatial data only, no filtering was required. 
+This table was joined ot the `taxa` table at a species level in order to retrieve the iNaturalist `taxon_id`. 
+I decided to keep this data separate from the `taxa` table because the spatial data is specific for species and 
+can contain more than one record (multiple geometries) per species. 
+This table uses the taxon_id as the distribution key. 
+
+### 4. Observations
+The iNaturalist `observations` table is the fact table for this data warehouse. 
+During the transformation step, the observations are filtered for taxons that fall within the "Amphibia" class. 
+I used the `longitude` and `latitude` fields to generate a geometry point which was then checked against the `species geospatial`
+table to see if the observation fell within the bounds of the known species distributions.
+This table used the `taxon_id` as the distribution key and the `observed on` date field as the sort key.
+	
+![iNaturalist Data Model](images/iNaturalist_Data_Model.png)
 
 
 

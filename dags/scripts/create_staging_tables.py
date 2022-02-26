@@ -14,23 +14,19 @@ observer_id INTEGER,
 latitude DOUBLE PRECISION,
 longitude DOUBLE PRECISION,
 positional_accuracy INTEGER, 
-taxon_id INTEGER, 
+taxon_id INTEGER DISTKEY, 
 quality_grade VARCHAR(50), 
-observed_on DATE, 
-PRIMARY KEY(observation_uuid))
-DISTSTYLE AUTO;
+observed_on DATE SORTKEY);
 """
 
 create_taxa_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.taxa_raw (
-taxon_id INTEGER, 
+taxon_id INTEGER DISTKEY, 
 ancestry VARCHAR(256), 
 rank_level DOUBLE PRECISION,
-rank VARCHAR(20),
+rank VARCHAR(20) SORTKEY,
 name VARCHAR(256), 
-active BOOLEAN,  
-PRIMARY KEY(taxon_id))
-DISTSTYLE AUTO;
+active BOOLEAN);
 """
 
 create_geospatial_raw_table_sql = """
@@ -60,11 +56,10 @@ family VARCHAR(256),
 genus  VARCHAR(256), 
 category VARCHAR(256), 
 marine VARCHAR(256), 
-terrestial VARCHAR(256), 
+terrestrial VARCHAR(256), 
 freshwater VARCHAR(256), 
 shape_leng DOUBLE PRECISION,
-shape_area DOUBLE PRECISION, 
-PRIMARY KEY(id_no)) 
+shape_area DOUBLE PRECISION) 
 DISTSTYLE AUTO;
 """
 

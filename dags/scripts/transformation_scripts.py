@@ -118,7 +118,8 @@ FROM
         sg.binomial = t.taxon_name AND 
         t.taxon_rank ='species' AND
         --ensure that there is only one record per species coming from the taxa table 
-        t.ancestry_name = 'Amphibia'
+        -- do this by selecting the ancestry_id for Amphibia
+        t.ancestry_id =20978
 """
 
 SPECIES_OBSERVATIONS_SQL ="""
@@ -156,7 +157,7 @@ SELECT
     -- recalculate the geom_point because you cannot group by geometry
   	ST_SetSRID(ST_Point(longitude, latitude), 4326) as geom_point, 
 	CAST(MAX(CAST(observed_in_known_area AS INTEGER)) AS BOOLEAN) as observed_in_known_area, 
-	--- ADD partition load time  
+	current_time
 FROM 
 	geom_comparison
 GROUP BY
