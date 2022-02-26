@@ -2,9 +2,9 @@ create_observers_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.observers_raw (
 observer_id INTEGER, 
 login VARCHAR(256), 
-name VARCHAR(256),
-PRIMARY KEY(observer_id))
-DISTSTYLE AUTO;
+name VARCHAR(256), 
+PRIMARY KEY(observer_id)
+) DISTSTYLE AUTO;
 """
 
 create_observations_raw_table_sql = """
@@ -14,25 +14,29 @@ observer_id INTEGER,
 latitude DOUBLE PRECISION,
 longitude DOUBLE PRECISION,
 positional_accuracy INTEGER, 
-taxon_id INTEGER DISTKEY, 
+taxon_id INTEGER, 
 quality_grade VARCHAR(50), 
-observed_on DATE SORTKEY);
+observed_on DATE, 
+PRIMARY KEY(observation_uuid)
+) DISTSTYLE AUTO;
 """
 
 create_taxa_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.taxa_raw (
-taxon_id INTEGER DISTKEY, 
+taxon_id INTEGER, 
 ancestry VARCHAR(256), 
 rank_level DOUBLE PRECISION,
 rank VARCHAR(20) SORTKEY,
-name VARCHAR(256), 
-active BOOLEAN);
+"name" VARCHAR(256), 
+active BOOLEAN, 
+PRIMARY KEY(taxon_id)
+) DISTSTYLE AUTO;
 """
 
 create_geospatial_raw_table_sql = """
 CREATE TABLE IF NOT EXISTS staging.species_geospatial_raw ( 
 geometry GEOMETRY,
-id_no INTEGER, 
+id_no INTEGER NOT NULL, 
 binomial VARCHAR(MAX), 
 presence INTEGER,	
 origin INTEGER, 
@@ -55,11 +59,12 @@ order_ VARCHAR(256),
 family VARCHAR(256), 
 genus  VARCHAR(256), 
 category VARCHAR(256), 
-marine VARCHAR(256), 
-terrestrial VARCHAR(256), 
-freshwater VARCHAR(256), 
+marine BOOLEAN, 
+terrestrial BOOLEAN, 
+freshwater BOOLEAN, 
 shape_leng DOUBLE PRECISION,
-shape_area DOUBLE PRECISION) 
-DISTSTYLE AUTO;
+shape_area DOUBLE PRECISION, 
+PRIMARY KEY(id_no)
+) DISTSTYLE AUTO;
 """
 
