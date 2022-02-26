@@ -157,7 +157,7 @@ SELECT
     -- recalculate the geom_point because you cannot group by geometry
   	ST_SetSRID(ST_Point(longitude, latitude), 4326) as geom_point, 
 	CAST(MAX(CAST(observed_in_known_area AS INTEGER)) AS BOOLEAN) as observed_in_known_area, 
-	--- ADD partition load time  
+	current_time
 FROM 
 	geom_comparison
 GROUP BY
