@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS observers (
-observer_id INTEGER NOT NULL, 
-login VARCHAR(256) NOT NULL, 
-name VARCHAR(256),
-PRIMARY KEY(observer_id))
-DISTSTYLE AUTO;
