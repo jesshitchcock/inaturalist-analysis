@@ -1,4 +1,6 @@
-## Introduction  
+## Introduction
+This is my capstone project for the [Udacity Data Engineering Nanodegree](https://www.udacity.com/course/data-engineer-nanodegree--nd027) which I successfully completed in February 2022. My project was self defined and required me to develop an end-to-end data pipeline using the technology and skills learnt during the earlier modules of this degree. 
+
 This project uses Apache Airflow to automate a data pipeline in order to generate a data warehouse of iNaturalist Licenced 
 Observation Open Image Data and International Union for Conservation of Nature (IUCN) Red List spatial data.
 
